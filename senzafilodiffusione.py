@@ -65,9 +65,12 @@ songFile = open('/home/pi/WoodStream/radio_info.txt', 'r')
 # ----------------------------------------------------------
 sem =  threading.Lock()
 
-# Reads radio URLS and names from text file (format: Radio name|Radio URL)
-# ----------------------------------------------------------
 def readRadioList():
+    """
+    Reads radio URLS and names from text file
+    Format: (preset.)Radio name|Radio URL
+    """
+    
     global names
     
     names=[]
@@ -78,20 +81,23 @@ def readRadioList():
         print(names[r])
     listFile.close()
 
-# Display utilities. The values used have been tested for the specific sh1106
-# ----------------------------------------------------------
-def invert(draw, x, y, text, center):
 
+def invert(draw, x, y, text, center):
+    """
+    Display utilities. The values used have been tested for the specific sh1106
+    """
+    
     font = ImageFont.load_default()
     draw.rectangle((x, y, x+120, y+10), outline=255, fill=255)
     if (center):
         x=76-4*len(text)
     draw.text((x, y), text, font=font, outline=0,fill="black")
 
-# Get current IP address
-# ----------------------------------------------------------
 def ipAddress():
-
+    """
+    Get current IP address
+    """
+    
     sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sk.connect(("8.8.8.8", 80))
     ip = (sk.getsockname()[0])
