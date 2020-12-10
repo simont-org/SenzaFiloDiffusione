@@ -4,10 +4,11 @@ from luma.core.render import canvas
 from luma.oled.device import sh1106
 from PIL import ImageFont 
 from time import sleep
-import threading
 import os
 import subprocess
 import socket
+import threading
+import re
 
 # Radio list sliding window
 listMenuStart = 0
@@ -113,6 +114,31 @@ def ip_address():
     ip = (sk.getsockname()[0])
     sk.close()
     return str(ip)
+
+def wps_connect():
+    SSID = "none"
+    # scan networks on interface wlan0, to see some nice networks
+    subprocess.check_output(["wpa_cli", "-i", "wlan0", "scan"])       
+    sleep(1);
+    
+    #get and decode results
+    wpa = subprocess.check_output(["wpa_cli", "-i", "wlan0", "scan_results"]).decode("UTF-8")
+    
+    #parse response to get MAC address of router that has WPS-PBC state
+    active_spot_reg = re.search("(([\da-f]{2}:){5}[\da-f]{2})(.*?)\[WPS-PBC\]", wpa)
+    
+    #check if found any
+    if not (active_spot_reg is None):
+        if active_spot_reg.group(1):
+            
+            #connect via wps_pbc
+            subprocess.check_output(["wpa_cli", "-i", "wlan0", "wps_pbc", active_spot_reg.group(1)])
+            SSID = active_spot_reg.group(5)
+            
+            print(active_spot_reg.group(1) + " " + SSID)
+            print(wpa)
+    
+    return(SSID)
 
 def formatSong(thestring):
     if thestring[:4] == "http":
@@ -220,8 +246,14 @@ def list_push_callback(channel):
             settingsMode = False
             counter = currentRadio
             sleep(1)
-        #elif settingsCount == 1:
-            #code for wps connection
+        elif settingsCount == 1:
+            SSID = wps_connect()
+            if SSID != "none":
+                with canvas(device) as draw:
+                    draw.text((0, 26), "* " + SSID, fill="white")
+            else:
+                with canvas(device) as draw:
+                    draw.text((0, 26), "* No WPS found", fill="white")
         elif settingsCount == 2:
             with canvas(device) as draw:
                 draw.text((16, 26), ip_address(), fill="white")
