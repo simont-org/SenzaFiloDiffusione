@@ -11,6 +11,7 @@ import threading
 import re
 
 # Radio list sliding window
+# ----------------------------------------------------------
 listMenuStart = 0
 listMenuEnd = 5
 counter = 0
@@ -19,6 +20,7 @@ menuindex = 0
 names: list=[]
 
 # Encoder reading
+# ----------------------------------------------------------
 listPrevNextCode = 0
 listStore = 0
 volPrevNextCode = 0
@@ -29,12 +31,14 @@ volume = 20
 mute = False
 
 # Settings menu
+# ----------------------------------------------------------
 settingsMode = False
 settingsCount = 0
 options: list=["<-- Back", "WiFi WPS", "Show IP address",
          "Reload list", "Standby", "Shutdown"]
 
-#GPIO pins
+# GPIO pins (BCM convention)
+# ----------------------------------------------------------
 list_clk = 27
 list_dt = 22
 list_sw = 17
@@ -45,21 +49,27 @@ conf_push = 12
 preset_sw: list = [[21,0],[20,0],[16,0],[13,0],[19,0],[26,0]]
 
 # Radio assigned to radio buttons
+# ----------------------------------------------------------
 preset_list: list = [0,1,2,3,4,5]
 
 # Setup OLED display
+# ----------------------------------------------------------
 serial = i2c(port=1, address=0x3C)
 device = sh1106(serial, rotate=0)
 
 # File for song info
+# ----------------------------------------------------------
 songFile = open('/home/pi/WoodStream/radio_info.txt', 'r')
 
 # Lock for display competition
+# ----------------------------------------------------------
 sem =  threading.Lock()
 
 # Reads radio URLS and names from text file (format: Radio name|Radio URL)
+# ----------------------------------------------------------
 def readRadioList():
     global names
+    
     names=[]
     listFile = open('/home/pi/WoodStream/radio_list.txt', 'r')
     line = listFile.readlines()
@@ -68,54 +78,30 @@ def readRadioList():
         print(names[r])
     listFile.close()
 
-def invert(draw,x,y,text, center):
+# Display utilities. The values used have been tested for the specific sh1106
+# ----------------------------------------------------------
+def invert(draw, x, y, text, center):
+
     font = ImageFont.load_default()
     draw.rectangle((x, y, x+120, y+10), outline=255, fill=255)
     if (center):
         x=76-4*len(text)
     draw.text((x, y), text, font=font, outline=0,fill="black")
 
-def menu(dev, draw, index):
-    global menuindex
-    global listMenuStart, listMenuEnd
-    global names
+# Get current IP address
+# ----------------------------------------------------------
+def ipAddress():
 
-    
-    font = ImageFont.load_default()
-    draw.rectangle(dev.bounding_box, outline="white", fill="black")
-    if index > listMenuEnd:
-        listMenuEnd += 1
-        listMenuStart += 1
-    elif index < listMenuStart:
-        listMenuEnd -= 1
-        listMenuStart -= 1
-    for i in range(6):
-        if( i == (index-listMenuStart)):
-            menuindex = index
-            invert(draw, 2, (index-listMenuStart)*10, names[listMenuStart + i][0], False)
-        else:
-            draw.text((2, i*10), names[listMenuStart + i][0], font=font, fill=255)
-
-
-def optionsMenu( draw, index):
-    global options
-    
-    font = ImageFont.load_default()
-    
-    for i in range(6):
-        if( i == index):
-            invert(draw, 2,  index*10, options[i], False)
-        else:
-            draw.text((2, i*10), options[i], font=font, fill=255)
-
-def ip_address():
     sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sk.connect(("8.8.8.8", 80))
     ip = (sk.getsockname()[0])
     sk.close()
     return str(ip)
 
-def wps_connect():
+# Search for a WPS-enabled wireless lan and connects to it
+# ----------------------------------------------------------
+def wpsConnect():
+
     SSID = "none"
     # scan networks on interface wlan0, to see some nice networks
     subprocess.check_output(["wpa_cli", "-i", "wlan0", "scan"])       
@@ -140,9 +126,51 @@ def wps_connect():
     
     return(SSID)
 
+# Draws radio list with a sliding window of 6 rows
+# ----------------------------------------------------------
+def radioList(dev, draw, index):
+    global menuindex
+    global listMenuStart, listMenuEnd
+    global names
+   
+    font = ImageFont.load_default()
+    draw.rectangle(dev.bounding_box, outline="white", fill="black")
+    if index > listMenuEnd:
+        listMenuEnd += 1
+        listMenuStart += 1
+    elif index < listMenuStart:
+        listMenuEnd -= 1
+        listMenuStart -= 1
+    for i in range(6):
+        if( i == (index-listMenuStart)):
+            menuindex = index
+            invert(draw, 2, (index-listMenuStart)*10, names[listMenuStart + i][0], False)
+        else:
+            draw.text((2, i*10), names[listMenuStart + i][0], font=font, fill=255)
+
+# Draws settings menu
+# ----------------------------------------------------------
+def settingsMenu( draw, index):
+    global options
+    
+    font = ImageFont.load_default()
+    
+    for i in range(6):
+        if( i == index):
+            invert(draw, 2,  index*10, options[i], False)
+        else:
+            draw.text((2, i*10), options[i], font=font, fill=255)
+
+
+# Gets song info from mpc-provided string
+# ----------------------------------------------------------
 def formatSong(thestring):
+    
+    #if it starts with "http" there isn't any song info, so display just dots
     if thestring[:4] == "http":
         return "......"
+    
+    #otherwise usually the string is <radio name>:<song info> so strip the radio name
     pos = thestring.find(':')
     if (pos != -1):
         strTemp = thestring[-(len(thestring)-pos-2):]
@@ -150,8 +178,11 @@ def formatSong(thestring):
     else:
         return ("*" + thestring)
 
+# Shows current song info (over multiple lines if needed)
+# ----------------------------------------------------------
 def songInfo():
     global songFile, currentRadio
+    
     lines = songFile.readlines()
     if len(lines) > 0:
 
@@ -171,7 +202,9 @@ def songInfo():
                     draw.text((81-4*(len(thelist[i].strip())), 19+10*i), thelist[i] , fill="white")
         
 
-def menu_operation(selection):
+# change current radio on button press
+# ----------------------------------------------------------
+def chooseRadio(selection):
     global songFile
     global names
     
@@ -183,7 +216,9 @@ def menu_operation(selection):
     os.system("mpc current > /home/pi/WoodStream/radio_info.txt ")
     songInfo()
 
-def vol_rotary():
+# Volume rotary encoder reading
+# ----------------------------------------------------------
+def vol_rotary(code, store):
     global volPrevNextCode
     global volStore
     global rot_enc_table
@@ -196,7 +231,7 @@ def vol_rotary():
         volPrevNextCode |= 0x01
     volPrevNextCode &= 0x0f
 
-# If valid then store as 16 bit data.
+    # If valid then store as 16 bit data.
     if  (rot_enc_table[volPrevNextCode] ):
         volStore <<= 4
         volStore |= volPrevNextCode
@@ -208,6 +243,10 @@ def vol_rotary():
    
     return 0
 
+# Radio list rotary encoder reading
+# Function is duplicated from the volume one because
+#    code and store variables must be kept separated for each rotary
+# ---------------------------------------------------------------------------
 def list_rotary():
     global listPrevNextCode
     global listStore
@@ -221,7 +260,7 @@ def list_rotary():
         listPrevNextCode |= 0x01
     listPrevNextCode &= 0x0f
 
-# If valid then store as 16 bit data.
+    # If valid then store as 16 bit data.
     if  (rot_enc_table[listPrevNextCode] ):
         listStore <<= 4
         listStore |= listPrevNextCode
@@ -233,13 +272,17 @@ def list_rotary():
    
     return 0
 
+# Radio list push button callback
+# If in radio list, just select radio.
+# If in settings list, activates the various options
+# ----------------------------------------------------------
 def list_push_callback(channel):  
     global counter, currentRadio
     global settingsMode, settingsCount
     
     if  settingsMode == False:
         currentRadio = counter
-        menu_operation(counter)
+        chooseRadio(counter)
     else:
         print(settingsCount)
         if settingsCount == 0:
@@ -247,16 +290,16 @@ def list_push_callback(channel):
             counter = currentRadio
             sleep(1)
         elif settingsCount == 1:
-            SSID = wps_connect()
-            if SSID != "none":
+            SSID = wpsConnect()
+            if SSID != "none":   # No WPS access detected
                 with canvas(device) as draw:
                     draw.text((0, 26), "* " + SSID, fill="white")
-            else:
+            else:                # WPS access detected
                 with canvas(device) as draw:
                     draw.text((0, 26), "* No WPS found", fill="white")
         elif settingsCount == 2:
             with canvas(device) as draw:
-                draw.text((16, 26), ip_address(), fill="white")
+                draw.text((16, 26), ipAddress(), fill="white")
         elif settingsCount == 3:
             readRadioList()
             with canvas(device) as draw:
@@ -272,13 +315,17 @@ def list_push_callback(channel):
             with canvas(device) as draw:
                 draw.text((0, 26), "     Shutdown...", fill="white")
             sleep(2)
-            subprocess.run(["sudo", "shutdown", "0"],stdout=subprocess.DEVNULL)
             with canvas(device) as draw:
                 draw.text((0, 26), " ", fill="white")
+            subprocess.run(["sudo", "shutdown", "0"],stdout=subprocess.DEVNULL)
 
 
+# Volume push button interrupt callback
+# Mute on/off
+# ----------------------------------------------------------
 def vol_push_callback(channel):  
     global volume, mute
+    
     if mute:
         subprocess.run(["mpc", "volume", str(volume)],stdout=subprocess.DEVNULL)
     else:
@@ -286,6 +333,9 @@ def vol_push_callback(channel):
         subprocess.run(["mpc", "volume", "0"],stdout=subprocess.DEVNULL)
     mute = not mute
 
+# Radio button switch interrupt callback
+# Select preset
+# ----------------------------------------------------------
 def preset_callback(channel):
     global currentRadio
     global preset_sw
@@ -297,24 +347,29 @@ def preset_callback(channel):
     for i in range(6):
         if (preset_sw[i][1]) == 0:
             if i != currentRadio:
-                menu_operation(i)
+                chooseRadio(i)
                 currentRadio = i
                 break
     songInfo()
     
-
-def showSettings(channel):
+# Radio button switch interrupt callback
+# Start settings mode
+# ----------------------------------------------------------
+def settings_push_callback(channel):
     global settingsMode, settingsCount
 
     settingsMode = True
     settingsCount = 0
-    sleep(.5)
+    sleep(.5) # A little time for debouncing
     
     with canvas(device) as draw:
-        optionsMenu( draw, settingsCount)
+        settingsMenu( draw, settingsCount)
                     
 
+# Song information thread. It is the prevalent one.
+# ----------------------------------------------------------
 def showSong():
+
     while True:
         if not settingsMode:
             sem.acquire()
@@ -322,6 +377,9 @@ def showSong():
             sem.release()
             sleep(10) 
 
+# Radio list display/selection thread. It shows the list
+#   only when the encoder is moved
+# ----------------------------------------------------------
 def listEncoder():
     global counter
     global names, options
@@ -345,7 +403,7 @@ def listEncoder():
             
                 sem.acquire()   
                 with canvas(device) as draw:
-                    menu(device, draw, counter)
+                    radioListdevice, draw, counter)
                 sem.release()
         else:
             step = list_rotary()
@@ -358,9 +416,11 @@ def listEncoder():
        
                 sem.acquire()
                 with canvas(device) as draw:
-                    optionsMenu(draw, settingsCount)
+                    settingsMenu(draw, settingsCount)
                 sem.release()       
-            
+
+# Volume variation thread
+# ----------------------------------------------------------            
 def volEncoder():
     global volume
     
@@ -381,8 +441,11 @@ def volEncoder():
             sem.release()
             subprocess.run(["mpc", "volume", str(volume)],stdout=subprocess.DEVNULL)
 
+# Preset switch thread. Polls the 6 switch current situation
+# ----------------------------------------------------------
 def presetRead():
     global preset_sw    
+    
     while True:
         for i in range(6):
             preset_sw[i][1] = GPIO.input(preset_sw[i][0])
@@ -391,6 +454,7 @@ def presetRead():
 #if __name__ == "__main__":
 
 # Setup GPIOs
+# ----------------------------------------------------------
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(list_clk, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(list_dt, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -402,10 +466,13 @@ GPIO.setup(conf_push, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 for s in range(6):
     GPIO.setup(preset_sw[s][0], GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
+# Initial tasks. Set volume low, just in case
+# ----------------------------------------------------------
 readRadioList()
 result = subprocess.run(["mpc", "volume", "20"],stdout=subprocess.DEVNULL)
 
-
+# Startup screen
+# ----------------------------------------------------------
 sem.acquire()
 with canvas(device) as drw:
     drw.text((0, 14), " SenzaFiloDiffusione", fill="white")
@@ -413,14 +480,20 @@ with canvas(device) as drw:
     drw.text((0, 30), "     by Simon T.", fill="white")
 sem.release()
 
+# Read radio buttons by calling interrupt function
+# ----------------------------------------------------------
 preset_callback(0)
 
+# Enable GPIO interrupts for push and radio buttons
+# ----------------------------------------------------------
 GPIO.add_event_detect(list_sw, GPIO.FALLING , callback=list_push_callback, bouncetime=300)
 GPIO.add_event_detect(vol_sw, GPIO.FALLING , callback=vol_push_callback, bouncetime=300)  
-GPIO.add_event_detect(conf_push, GPIO.FALLING , callback=showSettings, bouncetime=300)  
+GPIO.add_event_detect(conf_push, GPIO.FALLING , callback=settings_push_callback, bouncetime=300)  
 for s in range(6):
     GPIO.add_event_detect(preset_sw[s][0],GPIO.FALLING, callback=preset_callback, bouncetime=300)
 
+# Enable threads
+# ----------------------------------------------------------
 threadSong = threading.Thread(target = showSong) 
 threadSong.start()
 threadMenu = threading.Thread(target = listEncoder) 
