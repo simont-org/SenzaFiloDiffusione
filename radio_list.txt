@@ -1,0 +1,19 @@
+San Marino Classic|https://d18ufyp3q60j7u.cloudfront.net/radio-ch01/radio-ch02/playlist.m3u8
+Radio Caroline|http://sc2.radiocaroline.net:8040/;
+Radio Capital|http://radiocapital-lh.akamaihd.net/i/RadioCapital_Live_1@196312/index_96_a-b.m3u8?sd=10
+Radio Sabbia|http://sr2.inmystream.info:8104/stream
+RDS|http://stream.rds.radio/audio/rds.stream_aac/playlist.m3u8
+RTL 102.5|http://rtl-radio1-stream.thron.com/live/radio1/radio1/chunklist.m3u8
+RadioFreccia|http://rtl-radio-stream.thron.com/live/radio6/radio6/playlist.m3u8
+Virgin Radio|http://icecast.unitedradio.it/Virgin.mp3
+Radio Studio Delta|http://rsd.streamingmedia.it/play.mp3
+Radio Subasio|http://icy.unitedradio.it/Subasio.mp3
+Radio Centrale|http://str01.fluidstream.net/centrale.mp3?FLID=1
+Rai RadioUno|https://icestreaming.rai.it/1.mp3
+Rai RadioDue|https://icestreaming.rai.it/2.mp3
+Rai RadioTre|https://icestreaming.rai.it/3.mp3
+Rai Tutta Italiana|https://icestreaming.rai.it/4.mp3
+Rai Classica|https://icestreaming.rai.it/5.mp3
+Rai Isoradio|https://icestreaming.rai.it/6.mp3
+Radio Bruno|http://onair20.xdevel.com:8182/;
+Radio Gamma|http://onair18.xdevel.com:8210/;
