@@ -451,7 +451,7 @@ def listEncoder():
             
                 sem.acquire()   
                 with canvas(device) as draw:
-                    radioListdevice, draw, counter)
+                    radioList(device, draw, counter)
                 sem.release()
         else:
             step = list_rotary()
