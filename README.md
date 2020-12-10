@@ -1,2 +1,2 @@
 # SenzaFiloDiffusione
-Code for the Element14 Recycle and retrofit challenge
+Code and other material for the Element14 Recycle and retrofit challenge
