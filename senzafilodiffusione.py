@@ -73,7 +73,6 @@ def readRadioList():
     Format: (preset.)Radio name|Radio URL
     If a row is a preset number "x", i.e. the row starts with a number and a dot,
     set preset list position "x" to the index of correspondent position in names list
-    
     """
     
     global names, preset_list
@@ -92,7 +91,6 @@ def invert(draw, x, y, text, center):
     """
     Display utilities. The values used have been tested
         specifically for the sh1106 controller
-    
     """
     
     font = ImageFont.load_default()
@@ -105,7 +103,6 @@ def invert(draw, x, y, text, center):
 def ipAddress():
     """
     Get current IP address
-    
     """
     
     sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -118,7 +115,6 @@ def ipAddress():
 def wpsConnect():
     """
     Search for a WPS-enabled wireless lan and connects to it
-    
     """
     
     SSID = "none"
@@ -149,7 +145,6 @@ def wpsConnect():
 def radioList(dev, draw, index):
     """
     Draws radio list with a sliding window of 6 rows
-    
     """
 
     global menuindex
@@ -174,8 +169,7 @@ def radioList(dev, draw, index):
 
 def settingsMenu( draw, index):
     """
-    Draws settings menu
-    
+    Draws settings menu 
     """
     
     global options
@@ -191,8 +185,7 @@ def settingsMenu( draw, index):
 
 def formatSong(thestring):
     """
-    Gets song info from mpc-provided string
-    
+    Gets song info from mpc-provided string   
     """
 
     #if it starts with "http" there isn't any song info, so display just dots
@@ -210,8 +203,7 @@ def formatSong(thestring):
 
 def songInfo():
     """
-    Shows current song info (over multiple lines if needed)
-    
+    Shows current song info (over multiple lines if needed)  
     """
     
     global songFile, currentRadio
@@ -238,7 +230,6 @@ def songInfo():
 def chooseRadio(selection):
     """
     Change current radio
-    
     """
     
     global songFile
@@ -256,7 +247,6 @@ def chooseRadio(selection):
 def vol_rotary(code, store):
     """
     Volume rotary encoder reading
-    
     """
 
     global volPrevNextCode
@@ -289,7 +279,6 @@ def list_rotary():
     Radio list rotary encoder reading
     Function is duplicated from the volume one because
         code and store variables must be kept separated for each rotary
-
     """
     
     global listPrevNextCode
@@ -321,8 +310,7 @@ def list_push_callback(channel):
     """
     Radio list push button callback
     If in radio list, just select radio.
-    If in settings list, activates the various options
-    
+    If in settings list, activates the various options 
     """
  
     global counter, currentRadio
@@ -372,7 +360,6 @@ def vol_push_callback(channel):
     """
     Volume push button interrupt callback
     Mute on/off
-    
     """
     
     global volume, mute
@@ -389,7 +376,6 @@ def preset_callback(channel):
     """
     Radio button switch interrupt callback
     Select preset
-    
     """
     
     global currentRadio
@@ -412,7 +398,6 @@ def settings_push_callback(channel):
     """
     Radio button switch interrupt callback
     Start settings mode
-    
     """
     
     global settingsMode, settingsCount
@@ -428,7 +413,6 @@ def settings_push_callback(channel):
 def showSong():
     """
     Song information thread. It is the prevalent one.
-    
     """
     
     while True:
@@ -443,7 +427,6 @@ def listEncoder():
     """
     Radio list display/selection thread. It shows the list
     only when the encoder is moved
-    
     """
 
     global counter
@@ -488,7 +471,6 @@ def listEncoder():
 def volEncoder():
     """
     Volume variation thread
-    
     """
 
     global volume
@@ -514,7 +496,6 @@ def volEncoder():
 def presetRead():
     """
     Preset switch thread. Polls the 6 switch current situation
-    
     """
 
     global preset_sw    
