@@ -79,6 +79,7 @@ def readRadioList():
     
     names=[]
     listFile = open('/home/pi/WoodStream/radio_list.txt', 'r')
+    line = listFile.readlines()
     for r in range(len(line)):
         names.append(line[r].replace('\n','').split('|'))
         if names[r][0][1] == "." and names[r][0][0].isdigit():
@@ -96,7 +97,7 @@ def invert(draw, x, y, text, center):
     font = ImageFont.load_default()
     draw.rectangle((x, y, x+120, y+10), outline=255, fill=255)
     if (center):
-        x=76-4*len(text)
+        x=74-4*len(text) - 4*(len(text)%2) 
     draw.text((x, y), text, font=font, outline=0,fill="black")
 
 
@@ -162,9 +163,9 @@ def radioList(dev, draw, index):
     for i in range(6):
         if( i == (index-listMenuStart)):
             menuindex = index
-            invert(draw, 2, (index-listMenuStart)*10, names[listMenuStart + i][0], False)
+            invert(draw, 4, 4 + (index-listMenuStart)*10, names[listMenuStart + i][0], False)
         else:
-            draw.text((2, i*10), names[listMenuStart + i][0], font=font, fill=255)
+            draw.text((4, 4 + i*10), names[listMenuStart + i][0], font = font, fill = 255)
 
 
 def settingsMenu( draw, index):
@@ -178,9 +179,9 @@ def settingsMenu( draw, index):
     
     for i in range(6):
         if( i == index):
-            invert(draw, 2,  index*10, options[i], False)
+            invert(draw, 4,  4 + index * 10, options[i], False)
         else:
-            draw.text((2, i*10), options[i], font=font, fill=255)
+            draw.text((4, 4 + i * 10), options[i], font = font, fill = 255)
 
 
 def formatSong(thestring):
@@ -379,7 +380,7 @@ def preset_callback(channel):
     """
     
     global currentRadio
-    global preset_sw
+    global preset_sw, preset_list
     
     for i in range(6):
         preset_sw[i][1] = GPIO.input(preset_sw[i][0])
@@ -387,9 +388,9 @@ def preset_callback(channel):
     
     for i in range(6):
         if (preset_sw[i][1]) == 0:
-            if i != currentRadio:
-                chooseRadio(i)
-                currentRadio = i
+            if preset_list[i] != currentRadio:
+                currentRadio = preset_list[i]
+                chooseRadio(currentRadio)
                 break
     songInfo()
  
