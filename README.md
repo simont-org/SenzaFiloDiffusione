@@ -14,3 +14,15 @@ Luma OLED library: https://github.com/rm-hull/luma.oled
 RPi library: https://sourceforge.net/p/raspberry-gpio-python/wiki/Home/
 
 Better KY040 reading: https://www.best-microcontroller-projects.com/rotary-encoder.html
+
+Change the GPIO of the activity LED: https://www.raspberrypi.org/forums/viewtopic.php?t=158293
+
+Mopidy: https://mopidy.com/
+
+Installation for Raspbian: https://docs.mopidy.com/en/latest/installation/raspberrypi/#how-to-for-raspbian
+
+Mopidy-spotify: https://mopidy.com/ext/spotify/
+
+Mopidy-MPD: https://github.com/mopidy/mopidy-mpd
+
+Mopidy clients: https://docs.mopidy.com/en/latest/clients/
