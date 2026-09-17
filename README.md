@@ -8,7 +8,7 @@ Built for the [element14 Project14 "Recycle & Retrofit" challenge](https://commu
 The article covers the build with photos and video; this README is the technical
 reference for anyone who wants to reproduce it or read the code.
 
-[SenzaFiloDiffusione](senzafilo.jpg)
+![SenzaFiloDiffusione](senzafilo.jpg)
 
 ---
 
